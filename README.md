@@ -1,4 +1,4 @@
-pocketmine-HideHunt
+HideHunt (Pocketmine-MP plugin)
 ===================
 
-PocketMine Hide n Seek Plugin
+PocketMine-MP Hide n Seek Plugin
