@@ -1,0 +1,90 @@
+chat:
+  tag: '[BlockHunt] '
+  normal: '&b'
+  warning: '&c'
+  error: '&c'
+  arg: '&e'
+  header: '&9'
+  headerhigh: '%H_______.[ %A%header%%H ]._______'
+commandEnabled:
+  info: true
+  help: true
+  reload: true
+  join: true
+  leave: true
+  list: true
+  shop: true
+  start: true
+  wand: true
+  create: true
+  set: true
+  setwarp: true
+  remove: true
+  tokens: true
+autoUpdateCheck: true
+autoDownloadUpdate: false
+vaultSupport: false
+wandIDname: STICK
+wandName: '%A&lBlockHunt%N''s selection wand'
+wandDescription:
+- '%NUse this item to select an arena for your arena.'
+- '%ALeft-Click%N to select point #1.'
+- '%ARight-Click%N to select point #2.'
+- '%NUse the create command to define your arena.'
+- '%A/BlockHunt <help|h>'
+shop:
+  title: '%H&lBlockHunt %NShop'
+  price: '%NPrice: %A%amount% %Ntokens.'
+  blockChooserv1Enabled: true
+  blockChooserv1IDname: BOOK
+  blockChooserv1Price: 3000
+  blockChooserv1Name: '%H&lBlock Chooser'
+  blockChooserv1Description:
+  - '%NUse this item before the arena starts.'
+  - '%ARight-Click%N in the lobby and choose'
+  - '%Nthe block you want to be!'
+  - '&6Unlimited uses.'
+  BlockHuntPassv2Enabled: true
+  BlockHuntPassv2IDName: NAME_TAG
+  BlockHuntPassv2Price: 150
+  BlockHuntPassv2Name: '%H&lBlockHunt Pass'
+  BlockHuntPassv2Description:
+  - '%NUse this item before the arena starts.'
+  - '%ARight-Click%N in the lobby and choose'
+  - '%Nif you want to be a Hider or a Seeker!'
+  - '&61 time use.'
+sign:
+  LEAVE:
+  - '%H[BlockHunt%H]'
+  - '&4LEAVE'
+  - '&8Right-Click'
+  - '&8To leave.'
+  SHOP:
+  - '%H[BlockHunt%H]'
+  - '&4SHOP'
+  - '&8Right-Click'
+  - '&8To shop.'
+  WAITING:
+  - '%H[BlockHunt%H]'
+  - '%A%arenaname%'
+  - '%A%players%%N/%A%maxplayers%'
+  - '&8Waiting...'
+  STARTING:
+  - '%H[BlockHunt%H]'
+  - '%A%arenaname%'
+  - '%A%players%%N/%A%maxplayers%'
+  - '&2Start: %A%timeleft%'
+  INGAME:
+  - '%H[BlockHunt%H]'
+  - '%A%arenaname%'
+  - '%A%players%%N/%A%maxplayers%'
+  - '%EIngame: %A%timeleft%'
+scoreboard:
+  enabled: true
+  title: '%H[BlockHunt]'
+  timeleft: '%ATime left:'
+  seekers: '%NSeekers:'
+  hiders: '%NHiders:'
+  vaultBank: '%NBank:'
+  tokenAmount: '%NTokens:'
+requireInventoryClearOnJoin: false

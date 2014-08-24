@@ -1,0 +1,17 @@
+name: BlockHunt
+main: BlockHunt\BlockHunt
+version: 0.1.1
+api: 1.2.0
+author: Kagehis4
+website: https://github.com/ryuzaki01/pocketmine-HideHunt
+commands:
+  BlockHunt:
+    usage: /<command>
+    description: N/A
+    aliases:
+        - bh
+        - blockhunt
+permissions:
+    BlockHunt:
+        default: op
+        description: "All the permissions to use the BlockHunt"
