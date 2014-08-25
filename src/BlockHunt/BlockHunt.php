@@ -1,5 +1,5 @@
 <?php
-namespace HideHunt;
+namespace BlockHunt;
 
 use pocketmine\Player;
 use pocketmine\block\Air;
@@ -18,54 +18,54 @@ use pocketmine\command\CommandSender;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\Config;
 
-// use HideHunt\Listeners\OnBlockBreakEvent;
-// use HideHunt\Listeners\OnBlockPlaceEvent;
-// use HideHunt\Listeners\OnEntityDamageByEntityEvent;
-// use HideHunt\Listeners\OnEntityDamageEvent;
-// use HideHunt\Listeners\OnFoodLevelChangeEvent;
-// use HideHunt\Listeners\OnInventoryClickEvent;
-// use HideHunt\Listeners\OnInventoryCloseEvent;
-// use HideHunt\Listeners\OnPlayerCommandPreprocessEvent;
-// use HideHunt\Listeners\OnPlayerDropItemEvent;
-// use HideHunt\Listeners\OnPlayerInteractEvent;
-// use HideHunt\Listeners\OnPlayerMoveEvent;
-// use HideHunt\Listeners\OnPlayerQuitEvent;
-// use HideHunt\Listeners\OnSignChangeEvent;
-use HideHunt\Tasks\ArenaObserverTask;
-use HideHunt\Handlers\ArenaHandler;
-use HideHunt\Storage;
+// use BlockHunt\Listeners\OnBlockBreakEvent;
+// use BlockHunt\Listeners\OnBlockPlaceEvent;
+// use BlockHunt\Listeners\OnEntityDamageByEntityEvent;
+// use BlockHunt\Listeners\OnEntityDamageEvent;
+// use BlockHunt\Listeners\OnFoodLevelChangeEvent;
+// use BlockHunt\Listeners\OnInventoryClickEvent;
+// use BlockHunt\Listeners\OnInventoryCloseEvent;
+// use BlockHunt\Listeners\OnPlayerCommandPreprocessEvent;
+// use BlockHunt\Listeners\OnPlayerDropItemEvent;
+// use BlockHunt\Listeners\OnPlayerInteractEvent;
+// use BlockHunt\Listeners\OnPlayerMoveEvent;
+// use BlockHunt\Listeners\OnPlayerQuitEvent;
+use BlockHunt\Listeners\OnSignChangeEvent;
+use BlockHunt\Tasks\ArenaObserverTask;
+use BlockHunt\Handlers\ArenaHandler;
+use BlockHunt\Storage;
 
-class HideHunt extends PluginBase implements Listener{
-	private static $config = false;
-	private static $dataDir = false;
-	private $storage = false;
-	private $output = "";
+class BlockHunt extends PluginBase implements Listener{
+	public static $config = false;
+	public static $dataDir = false;
+	public $output = "";
+	public $storage = false;
 	
 	public function onLoad(){
-		$this->getLogger()->info(TextFormat::WHITE . "HideHunt plugin has been loaded!");
+		$this->getLogger()->info(TextFormat::WHITE . "BlockHunt plugin has been loaded!");
 	}
 	
 	public function onEnable(){
-		@mkdir("plugins/HideHunt");
-		self::$dataDir = "plugins/HideHunt/";
+		@mkdir("plugins/BlockHunt");
+		self::$dataDir = "plugins/BlockHunt/";
 		
         $this->checkConfig();
-		//$this->storage = new Storage($this);
+		$this->storage = new Storage($this);
 		
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
-		// $this->getServer()->getPluginManager()->registerEvents(new OnBlockBreakEvent(), $this);
-		// $this->getServer()->getPluginManager()->registerEvents(new OnBlockPlaceEvent(), $this);
+		// $this->getServer()->getPluginManager()->registerEvents(new OnBlockBreakEvent($this), $this);
+		// $this->getServer()->getPluginManager()->registerEvents(new OnBlockPlaceEvent($this), $this);
 		// $this->getServer()->getPluginManager()->registerEvents(new OnEntityDamageByEntityEvent(), $this);
-		// $this->getServer()->getPluginManager()->registerEvents(new OnEntityDamageEvent(), $this);
-		// $this->getServer()->getPluginManager()->registerEvents(new OnFoodLevelChangeEvent(), $this);
-		// $this->getServer()->getPluginManager()->registerEvents(new OnInventoryClickEvent(), $this);
-		// $this->getServer()->getPluginManager()->registerEvents(new OnInventoryCloseEvent(), $this);
-		// $this->getServer()->getPluginManager()->registerEvents(new OnPlayerCommandPreprocessEvent(), $this);
-		// $this->getServer()->getPluginManager()->registerEvents(new OnPlayerDropItemEvent(), $this);
-		// $this->getServer()->getPluginManager()->registerEvents(new OnPlayerInteractEvent(), $this);
-		// $this->getServer()->getPluginManager()->registerEvents(new OnPlayerMoveEvent(), $this);
-		// $this->getServer()->getPluginManager()->registerEvents(new OnPlayerQuitEvent(), $this);
-		// $this->getServer()->getPluginManager()->registerEvents(new OnSignChangeEvent(), $this);
+		// $this->getServer()->getPluginManager()->registerEvents(new OnEntityDamageEvent($this), $this);
+		// $this->getServer()->getPluginManager()->registerEvents(new OnFoodLevelChangeEvent($this), $this);
+		// $this->getServer()->getPluginManager()->registerEvents(new OnInventoryClickEvent($this), $this);
+		// $this->getServer()->getPluginManager()->registerEvents(new OnInventoryCloseEvent($this), $this);
+		// $this->getServer()->getPluginManager()->registerEvents(new OnPlayerCommandPreprocessEvent($this), $this);
+		// $this->getServer()->getPluginManager()->registerEvents(new OnPlayerDropItemEvent($this), $this);
+		// $this->getServer()->getPluginManager()->registerEvents(new OnPlayerInteractEvent($this), $this);
+		// $this->getServer()->getPluginManager()->registerEvents(new OnPlayerMoveEvent($this), $this);
+		// $this->getServer()->getPluginManager()->registerEvents(new OnPlayerQuitEvent($this), $this);
+		$this->getServer()->getPluginManager()->registerEvents(new OnSignChangeEvent($this), $this);
 		
 				
 		//setupEconomy();
@@ -74,7 +74,7 @@ class HideHunt extends PluginBase implements Listener{
 		
 		$this->getServer()->getScheduler()->scheduleRepeatingTask(new ArenaObserverTask($this), 6000);
 
-        $this->getLogger()->info(TextFormat::GREEN ."HideHunt plugin has been enabled!");
+        $this->getLogger()->info(TextFormat::GREEN ."BlockHunt plugin has been enabled!");
     }
 	
 	public function onCommand(CommandSender $sender, Command $command, $label, array $params){
@@ -114,7 +114,7 @@ class HideHunt extends PluginBase implements Listener{
 			}
 		}
 		
-        $this->getLogger()->info(TextFormat::RED . "HideHunt plugin has been disabled!");
+        $this->getLogger()->info(TextFormat::RED . "BlockHunt plugin has been disabled!");
     }
 	
 	private function checkConfig(){
@@ -122,7 +122,7 @@ class HideHunt extends PluginBase implements Listener{
 
         if(!$this->getConfig()->exists("chat")){
             $this->getConfig()->set("chat", array(
-					tag => "[HideHunt] ", 
+					tag => "[BlockHunt] ", 
 					normal => "&b",
 					warning => "&c",
 					error => "&c",
@@ -157,11 +157,11 @@ class HideHunt extends PluginBase implements Listener{
 					"%ALeft-Click%N to select point #1.",
 					"%ARight-Click%N to select point #2.",
 					"%NUse the create command to define your arena.",
-					"%A/HideHunt <help|h>"
+					"%A/BlockHunt <help|h>"
 			));
         } elseif(!$this->getConfig()->exists("commandEnabled")){
             $this->getConfig()->set("commandEnabled",  array(
-					title => "%H&HideHunt %NShop", 
+					title => "%H&BlockHunt %NShop", 
 					price => "%NPrice: %A%amount% %Ntokens.",
 					blockChooserv1Enabled => true,
 					blockChooserv1IDname => "BOOK",
@@ -187,31 +187,31 @@ class HideHunt extends PluginBase implements Listener{
         } elseif(!$this->getConfig()->exists("sign")){
             $this->getConfig()->set("sign",  array(
 					LEAVE => array(
-						"%H[HideHunt%H]",
+						"%H[BlockHunt%H]",
 						"&4LEAVE",
 						"&8Right-Click",
 						"&8To leave."
 					),
 					SHOP => array(
-						"%H[HideHunt%H]",
+						"%H[BlockHunt%H]",
 						"&4SHOP",
 						"&8Right-Click",
 						"&8To shop."
 					),
 					WAITING => array(
-						"%H[HideHunt%H]",
+						"%H[BlockHunt%H]",
 						"&4SHOP",
 						"%A%players%%N/%A%maxplayers%",
 						"&8Waiting..."
 					),
 					STARTING => array(
-						"%H[HideHunt%H]",
+						"%H[BlockHunt%H]",
 						"%A%arenaname%",
 						"%A%players%%N/%A%maxplayers%",
 						"&2Start: %A%timeleft%"
 					),
 					INGAME => array(
-						"%H[HideHunt%H]",
+						"%H[BlockHunt%H]",
 						"%A%arenaname%",
 						"%A%players%%N/%A%maxplayers%",
 						"%EIngame: %A%timeleft"
@@ -220,7 +220,7 @@ class HideHunt extends PluginBase implements Listener{
         } elseif(!$this->getConfig()->exists("scoreboard")){
             $this->getConfig()->set("scoreboard",  array(
 					enabled => true, 
-					title => "%H[HideHunt]",
+					title => "%H[BlockHunt]",
 					timeleft => "%ATime left:",
 					seekers => "%NSeekers:",
 					hiders => "%NHiders:",

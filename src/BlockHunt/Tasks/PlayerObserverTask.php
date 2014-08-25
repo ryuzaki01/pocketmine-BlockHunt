@@ -1,6 +1,6 @@
 <?php
 
-namespace HideHunt\Tasks;
+namespace BlockHunt\Tasks;
 use pocketmine\Player;
 use pocketmine\scheduler\PluginTask;
 use pocketmine\Server;

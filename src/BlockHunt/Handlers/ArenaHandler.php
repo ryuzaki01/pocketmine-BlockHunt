@@ -1,5 +1,5 @@
 <?php
-namespace HideHunt\Handlers;
+namespace BlockHunt\Handlers;
 
 use pocketmine\Player;
 use pocketmine\item\Item;
@@ -8,14 +8,15 @@ use pocketmine\block\Block;
 use pocketmine\level\Position;
 use pocketmine\inventory\PlayerInventory;
 
-use HideHunt\Handlers\ScoreboardHandler;
-use HideHunt\Entities\Arena;
-use HideHunt\PlayerArenaData;
+//use BlockHunt\Handlers\ScoreboardHandler;
+use BlockHunt\BlockHunt;
+use BlockHunt\Entities\Arena;
+use BlockHunt\PlayerArenaData;
 
 class ArenaHandler {
 	private $plugin;
 
-	public function __construct(Plugin $plugin){
+	public function __construct(BlockHunt $plugin){
 		parent::__construct($plugin);
 		$this->plugin = $plugin;
 	}

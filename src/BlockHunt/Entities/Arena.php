@@ -1,5 +1,5 @@
 <?php
-namespace HideHunt\Entities;
+namespace BlockHunt\Entities;
 
 use pocketmine\utils\Config;
 
