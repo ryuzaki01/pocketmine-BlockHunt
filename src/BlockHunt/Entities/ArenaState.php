@@ -1,12 +1,15 @@
 <?php
 namespace BlockHunt\Entities;
 
-class ArenaState
+use BlockHunt\Entities\Enum;
+
+class ArenaState extends Enum
 {
-	 const DISABLED = 0;
-	 const WAITING = 1;
-	 const STARTING = 2;
-	 const INGAME = 3;
-	 const RESTARTING = 4;
+	 const __default = 0;
+	 const DISABLED = 1;
+	 const WAITING = 2;
+	 const STARTING = 3;
+	 const INGAME = 4;
+	 const RESTARTING = 5;
 }
 ?>

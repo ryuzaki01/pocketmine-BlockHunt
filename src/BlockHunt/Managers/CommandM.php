@@ -3,10 +3,11 @@ namespace BlockHunt\Managers;
 
 use BlockHunt\Commands\DefaultCMD;
 use BlockHunt\ConfigC;
-use BlockHunt\PermissionsC;
-use BlockHunt\W;
+//use BlockHunt\PermissionsC;
+use BlockHunt\BlockHunt;
 
 class CommandM {
+	public $plugin;
 	public $name; // String
 	public $label; // String
 	public $args; // String
@@ -18,14 +19,10 @@ class CommandM {
 	public $CMD; // DeFaultCMD
 	public $usage; // String
 
-	private function __init() { // deFault class members
-		public static function __staticinit() // static class members
-	}
-
-	public static function __construct($name, $label, $args, $argsalias, $permission, $help, $enabled, $mainTRBlist, $CMD, $usage) // [String name, String label, String args, String argsalias, PermissionsC.Permissions permission, ConFigC
+	public function __construct(BlockHunt $plugin, $name, $label, $args, $argsalias, $permission, $help, $enabled, $mainTRBlist, $CMD, $usage) // [String name, String label, String args, String argsalias, PermissionsC.Permissions permission, ConFigC
 	{
 		$me = new self();
-		$me->__init():
+		$me->plugin = $plugin;
 		$me->name = $name;
 		$me->label = $label;
 		$me->args = $args;
@@ -36,9 +33,7 @@ class CommandM {
 		$me->mainTRBlist = $mainTRBlist;
 		$me->CMD = $CMD;
 		$me->usage = $usage;
-		W::$commands->add($me);
-		return $me;
+		$this->plugin->commands->add($me);
 	}
 }
-CommandM::__staticinit(); // initialize static vars For this class on load
 ?>

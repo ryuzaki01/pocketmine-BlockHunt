@@ -2,8 +2,7 @@
 use BlockHunt\BlockHunt;
 use BlockHunt\ConfigC;
 use BlockHunt\Storage;
- import org.bukkit.Bukkit;
- import org.bukkit.command.ConsoleCommandSender;
+use pocketmine\command\ConsoleCommandSender;
 use pocketmine\Player;
  
 class MessageM
@@ -52,25 +51,21 @@ class MessageM
          location.config.getFile().get(location.location).toString()
          .replaceAll("%player%", player.getName()), vars));
      }
-     Bukkit.getConsoleSender().sendMessage(
-       replaceAll(
-       location.config.getFile().get(location.location)
-       .toString().replaceAll("%player%", "Console"), 
-       vars));
+		$this->plugin->getServer()->dispatchCommand(new ConsoleCommandSender(), replaceAll(location.config.getFile().get(location.location).toString().replaceAll("%player%", "Console"), vars));
    }
    
-   public static String replaceAll(String message, String... vars)
+   public static String replaceAll($message, $vars)
    {
      return replaceColours(replaceColourVars(
        replaceVars(message, vars)));
    }
    
-   public static String replaceColours(String message)
+   public static String replaceColours($message)
    {
      return message.replaceAll("(&([a-fk-or0-9]))", "Â§$2");
    }
    
-   public static String replaceColourVars(String message)
+   public static String replaceColourVars($message)
    {
      message = message.replaceAll("%N", CType.NORMAL());
      message = message.replaceAll("%W", CType.WARNING());

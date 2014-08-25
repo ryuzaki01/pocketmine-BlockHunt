@@ -18,26 +18,27 @@ use BlockHunt\ConfigC;
 
 class ArenaObserverTask extends PluginTask{
 
-	private $blockhunt;
+	private $plugin;
 	private $configs = array();
 	
-	public function __construct(BlockHunt $blockhunt){
-		parent::__construct($blockhunt);
-		$this->blockhunt = $blockhunt;
+	public function __construct(BlockHunt $plugin){
+		parent::__construct($plugin);
+		$this->plugin = $plugin;
 	}
 	
 	public function onRun($currentTick){
-         foreach($this->blockhunt->storage->arenaList as $arena)
+		if(count($this->plugin->storage->arenaList > 0)){
+         foreach($this->plugin->storage->arenaList as $arena)
          {
            $loop = false;
-           $block;
+           $block = false;
            if ($arena->gameState == ArenaState::WAITING)
            {
              if (count($arena->playersInArena) >= $arena->minPlayers)
              {
                $arena->gameState = ArenaState::STARTING;
                $arena->timer = $arena->timeInLobbyUntilStart;
-               ArenaHandler::sendFMessage($arena,  ConfigC::normal_lobbyArenaIsStarting, "1-" + $arena->timeInLobbyUntilStart );
+               ArenaHandler::sendFMessage($arena,  $this->plugin->storage->message->get("normal")["lobbyArenaIsStarting"], "1-" . $arena->timeInLobbyUntilStart );
              }
            }
            else if ($arena->gameState == ArenaState::STARTING)
@@ -47,22 +48,22 @@ class ArenaObserverTask extends PluginTask{
              {
                if ($arena->timer == 60)
                {
-                 ArenaHandler::sendFMessage(arena, ConfigC::normal_lobbyArenaIsStarting,   "1-60" );
+                 ArenaHandler::sendFMessage(arena, $this->plugin->storage->message->get("normal")["lobbyArenaIsStarting"],   "1-60" );
                }
                else if ($arena->timer == 30)
                {
-                 ArenaHandler::sendFMessage(arena, ConfigC::normal_lobbyArenaIsStarting,  "1-30" );
+                 ArenaHandler::sendFMessage(arena, $this->plugin->storage->message->get("normal")["lobbyArenaIsStarting"],  "1-30" );
                }
                else if ($arena->timer == 10)
                {
-                 ArenaHandler::sendFMessage(arena, ConfigC::normal_lobbyArenaIsStarting,  "1-10" );
+                 ArenaHandler::sendFMessage(arena, $this->plugin->storage->message->get("normal")["lobbyArenaIsStarting"],  "1-10" );
                }
                else if ($arena->timer == 5)
                {
                  // for (Player pl : $arena->playersInArena) {
                    // pl.playSound(pl.getLocation(),  Sound.ORB_PICKUP, 1, 0);
                  // }
-                 ArenaHandler::sendFMessage(arena, ConfigC::normal_lobbyArenaIsStarting, "1-5" );
+                 ArenaHandler::sendFMessage(arena, $this->plugin->storage->message->get("normal")["lobbyArenaIsStarting"], "1-5" );
                }
                else if ($arena->timer == 4)
                {
@@ -70,7 +71,7 @@ class ArenaObserverTask extends PluginTask{
                    // pl.playSound(pl.getLocation(), 
                      // Sound.ORB_PICKUP, 1, 0);
                  // }
-                 ArenaHandler::sendFMessage(arena, ConfigC::normal_lobbyArenaIsStarting,  "1-4" );
+                 ArenaHandler::sendFMessage(arena, $this->plugin->storage->message->get("normal")["lobbyArenaIsStarting"],  "1-4" );
                }
                else if ($arena->timer == 3)
                {
@@ -78,7 +79,7 @@ class ArenaObserverTask extends PluginTask{
                    // pl.playSound(pl.getLocation(), 
                      // Sound.ORB_PICKUP, 1, 1);
                  // }
-                ArenaHandler::sendFMessage(arena, ConfigC::normal_lobbyArenaIsStarting,  "1-3" );
+                ArenaHandler::sendFMessage(arena, $this->plugin->storage->message->get("normal")["lobbyArenaIsStarting"],  "1-3" );
                }
                else if ($arena->timer == 2)
                {
@@ -86,7 +87,7 @@ class ArenaObserverTask extends PluginTask{
                    // pl.playSound(pl.getLocation(), 
                      // Sound.ORB_PICKUP, 1, 1);
                  // }
-                 ArenaHandler::sendFMessage(arena, ConfigC::normal_lobbyArenaIsStarting,  "1-2" );
+                 ArenaHandler::sendFMessage(arena, $this->plugin->storage->message->get("normal")["lobbyArenaIsStarting"],  "1-2" );
                }
                else if ($arena->timer == 1)
                {
@@ -94,24 +95,24 @@ class ArenaObserverTask extends PluginTask{
                    // pl.playSound(pl.getLocation(), 
                      // Sound.ORB_PICKUP, 1, 2);
                  // }
-                 ArenaHandler::sendFMessage(arena, ConfigC::normal_lobbyArenaIsStarting,  "1-1" );
+                 ArenaHandler::sendFMessage(arena, $this->plugin->storage->message->get("normal")["lobbyArenaIsStarting"],  "1-1" );
                }
              }
              else
              {
                $arena->gameState = ArenaState::INGAME;
                $arena->timer = $arena->gameTime;
-               ArenaHandler::sendFMessage(arena, ConfigC::normal_lobbyArenaStarted, "secs-" + $arena->waitingTimeSeeker);
+               ArenaHandler::sendFMessage(arena, $this->plugin->storage->message->get("normal")["lobbyArenaStarted"], "secs-" . $arena->waitingTimeSeeker);
                for ($i = $arena->amountSeekersOnStart; $i > 0; $i--)
                {
                  $loop = true;
                  $seeker = mt_rand(0, (count($arena->playersInArena)-1));
                  foreach($arena->playersInArena as $playerCheck) {
-                   if ($this->blockhunt->storage->choosenSeeker[$playerCheck] != null) {
-                     if ($this->blockhunt->storage->choosenSeeker[$playerCheck])
+                   if ($this->plugin->storage->choosenSeeker[$playerCheck] != null) {
+                     if ($this->plugin->storage->choosenSeeker[$playerCheck])
                      {
 						$seeker = $playerCheck;
-						unset($this->blockhunt->storage->choosenSeeker[$playerCheck]);
+						unset($this->plugin->storage->choosenSeeker[$playerCheck]);
                      }
                      else if ($seeker == $playerCheck)
                      {
@@ -123,11 +124,11 @@ class ArenaObserverTask extends PluginTask{
                  if ($loop) {
                    if (!in_array($seeker, $arena->seekers))
                    {
-                     ArenaHandler::sendFMessage($arena, "%TAG%NPlayer %A%seeker%%N has been choosen as seeker!",  "seeker-" + $seeker->getName() );
+                     ArenaHandler::sendFMessage($arena, "%TAG%NPlayer %A%seeker%%N has been choosen as seeker!",  "seeker-" . $seeker->getName() );
                      $arena->seekers[] = $seeker;
                      $seeker->teleport($arena->seekersWarp);
                      $seeker.getInventory()->clearAll();
-                    $this->blockhunt->storage->seekertime[$seeker] = $arena->waitingTimeSeeker;
+                    $this->plugin->storage->seekertime[$seeker] = $arena->waitingTimeSeeker;
                    }
                    else
                    {
@@ -141,10 +142,10 @@ class ArenaObserverTask extends PluginTask{
                    $arenaPlayer->getInventory()->clearAll();
 				   
                    $block = $arena->disguiseBlocks[mt_rand(0, count($arena->disguiseBlocks))];
-                   if ($this->blockhunt->storage->choosenBlock[$arenaPlayer] != null)
+                   if ($this->plugin->storage->choosenBlock[$arenaPlayer] != null)
                    {
-                     $block = $this->blockhunt->storage->choosenBlock[$arenaPlayer];
-                     unset($this->blockhunt->storage->choosenBlock[$arenaPlayer]);
+                     $block = $this->plugin->storage->choosenBlock[$arenaPlayer];
+                     unset($this->plugin->storage->choosenBlock[$arenaPlayer]);
                    }
 				   
                    DisguiseAPI::disguiseToAll($arenaPlayer, $block->getID());
@@ -155,11 +156,11 @@ class ArenaObserverTask extends PluginTask{
                    $blockCount->setDurability($block->getMaxDurability());
                    $arenaPlayer.getInventory()->setItem(8, $blockCount);
                    $arenaPlayer.getInventory()->setArmorItem(0, $block);
-                   $this->blockhunt->storage->pBlock[$arenaPlayer] = $block;
+                   $this->plugin->storage->pBlock[$arenaPlayer] = $block;
                    if ($block.getDurability() != 0) {
-						MessageM::sendFMessage($arenaPlayer,"%TAG%NYou're disguised as a(n) '%A%block%%N' block.", "block-" + block.getType()->name().replaceAll("_", "").replaceAll("BLOCK", "").toLowerCase() + ":" + block.getDurability() );
+						MessageM::sendFMessage($arenaPlayer,"%TAG%NYou're disguised as a(n) '%A%block%%N' block.", "block-" . block.getType()->name().replaceAll("_", "").replaceAll("BLOCK", "").toLowerCase() . ":" . block.getDurability() );
                    } else {
-						MessageM.sendFMessage($arenaPlayer, ConfigC::normal_ingameBlock, "block-" + $block.getType()->name().replaceAll("_", "").replaceAll("BLOCK", "").toLowerCase() );
+						MessageM.sendFMessage($arenaPlayer, $this->plugin->storage->message->get("normal")["ingameBlock"], "block-" . $block.getType()->name().replaceAll("_", "").replaceAll("BLOCK", "").toLowerCase() );
                    }
                  }
                }
@@ -176,14 +177,14 @@ class ArenaObserverTask extends PluginTask{
                $player->getInventory().setArmorItem(3, Item::IRON_BOOTS);
                //$player->playSound(player.getLocation(), Sound.ANVIL_USE, 1, 1);
              }
-             if ($this->blockhunt->storage->seekertime[$player] != null)
+             if ($this->plugin->storage->seekertime[$player] != null)
              {
-				$this->blockhunt->storage->seekertime[$player] -= 1;
-               if ($this->blockhunt->storage->seekertime[$player] <= 0)
+				$this->plugin->storage->seekertime[$player] -= 1;
+               if ($this->plugin->storage->seekertime[$player] <= 0)
                {
                  $player->teleport($arena->hidersWarp);
-                 unset($this->blockhunt->storage->seekertime[$player]);
-                 ArenaHandler::sendFMessage(arena, ConfigC::normal_ingameSeekerSpawned, "playername-" + player.getName() );
+                 unset($this->plugin->storage->seekertime[$player]);
+                 ArenaHandler::sendFMessage(arena, $this->plugin->storage->message->get("normal")["ingameSeekerSpawned"], "playername-" . player.getName() );
                }
              }
            }
@@ -201,51 +202,50 @@ class ArenaObserverTask extends PluginTask{
                    if (!in_array($arenaPlayer, $arena->seekers))
                    {
                      $arenaPlayer->getInventory()->addItem($sword);
-                     MessageM.sendFMessage($arenaPlayer, ConfigC::normal_ingameGivenSword);
+                     MessageM.sendFMessage($arenaPlayer, $this->plugin->storage->message->get("normal")["ingameGivenSword"]);
                    }
                  }
                }
                if ($arena->timer == 190)
                {
-                 ArenaHandler::sendFMessage($arena, ConfigC::normal_ingameArenaEnd,  "1-190" );
+                 ArenaHandler::sendFMessage($arena, $this->plugin->storage->message->get("normal")["ingameArenaEnd"],  "1-190" );
                }
                else if ($arena->timer == 60)
                {
-                 ArenaHandler::sendFMessage($arena, ConfigC::normal_ingameArenaEnd,  "1-60" );
+                 ArenaHandler::sendFMessage($arena, $this->plugin->storage->message->get("normal")["ingameArenaEnd"],  "1-60" );
                }
                else if ($arena->timer == 30)
                {
-                 ArenaHandler::sendFMessage(arena, 
-                   ConfigC::normal_ingameArenaEnd,  "1-30" );
+                 ArenaHandler::sendFMessage($arena, $this->plugin->storage->message->get("normal")["ingameArenaEnd"],  "1-30" );
                }
                else if ($arena->timer == 10)
                {
-                 ArenaHandler::sendFMessage(arena, ConfigC::normal_ingameArenaEnd,  "1-10" );
+                 ArenaHandler::sendFMessage($arena, $this->plugin->storage->message->get("normal")["ingameArenaEnd"],  "1-10" );
                }
                else if ($arena->timer == 5)
                {
                  //$arena->lobbyWarp.getWorld().playSound($arena->lobbyWarp, Sound.ORB_PICKUP, 1, 0);
-                 ArenaHandler::sendFMessage($arena, ConfigC::normal_ingameArenaEnd,  "1-5" );
+                 ArenaHandler::sendFMessage($arena, $this->plugin->storage->message->get("normal")["ingameArenaEnd"],  "1-5" );
                }
                else if ($arena->timer == 4)
                {
                  //$arena->lobbyWarp.getWorld().playSound($arena->lobbyWarp, Sound.ORB_PICKUP, 1, 0);
-                 ArenaHandler::sendFMessage(arena, ConfigC::normal_ingameArenaEnd,  "1-4" );
+                 ArenaHandler::sendFMessage($arena, $this->plugin->storage->message->get("normal")["ingameArenaEnd"],  "1-4" );
                }
                else if ($arena->timer == 3)
                {
                  //$arena->lobbyWarp.getWorld().playSound($arena->lobbyWarp, Sound.ORB_PICKUP, 1, 1);
-                 ArenaHandler::sendFMessage($arena, ConfigC::normal_ingameArenaEnd,  "1-3" );
+                 ArenaHandler::sendFMessage($arena, $this->plugin->storage->message->get("normal")["ingameArenaEnd"],  "1-3" );
                }
                else if ($arena->timer == 2)
                {
                  //$arena->lobbyWarp.getWorld().playSound($arena->lobbyWarp, Sound.ORB_PICKUP, 1, 1);
-                 ArenaHandler::sendFMessage($arena, ConfigC::normal_ingameArenaEnd,  "1-2" );
+                 ArenaHandler::sendFMessage($arena, $this->plugin->storage->message->get("normal")["ingameArenaEnd"],  "1-2" );
                }
                else if ($arena->timer == 1)
                {
                  $arena->lobbyWarp.getWorld().playSound($arena->lobbyWarp,Sound.ORB_PICKUP, 1, 2);
-                 ArenaHandler::sendFMessage($arena, ConfigC::normal_ingameArenaEnd,  "1-1" );
+                 ArenaHandler::sendFMessage($arena, $this->plugin->storage->message->get("normal")["ingameArenaEnd"],  "1-1" );
                }
              }
              else
@@ -258,11 +258,11 @@ class ArenaObserverTask extends PluginTask{
                if (!$arena->seekers.contains($arenaPlayer))
                {
                  $pLoc = new Position($arenaPlayer->getX() - 0.5, $arenaPlayer->getY(), $arenaPlayer->getZ() - 0.5, $arenaPlayer->getLevel());
-                 $moveLoc = $this->blockhunt->storage->moveLoc[$arenaPlayer];
+                 $moveLoc = $this->plugin->storage->moveLoc[$arenaPlayer];
                  $block = $arenaPlayer->getInventory()->getItem(8);
-                 if (($block == null) && ($this->blockhunt->storage->pBlock[$arenaPlayer] != null))
+                 if (($block == null) && ($this->plugin->storage->pBlock[$arenaPlayer] != null))
                  {
-                   $block = $this->blockhunt->storage->pBlock[$arenaPlayer];
+                   $block = $this->plugin->storage->pBlock[$arenaPlayer];
                    $arenaPlayer->getInventory()->setItem(8, $block);
                  }
                  if ($moveLoc != null) {
@@ -275,19 +275,19 @@ class ArenaObserverTask extends PluginTask{
                      else
                      {
                        $pBlock = $player->getLocation()->getBlock();
-                       if (($pBlock->getType()->equals(Item::AIR)) || ($pBlock->getType()->equals(Item::WATER)) || ($pBlock->getType()->equals(Item::STATIONARY_WATER)))
+                       if (($pBlock->getType()->equals(Item::AIR)) || ($pBlock->getType()->equals(Item::WATER)) || ($pBlock->getType()->equals(Block::STILL_WATER)))
                        {
                          if (($pBlock->getType()->equals(Item::WATER)) || ($pBlock->getType()->equals(Item::STATIONARY_WATER))) {
-                           $this->blockhunt->storage->hiddenLocWater.put($player, true);
+                           $this->plugin->storage->hiddenLocWater.put($player, true);
                          } else {
-                           $this->blockhunt->storage->hiddenLocWater.put($player, false);
+                           $this->plugin->storage->hiddenLocWater.put($player, false);
                          }
                          $arrayOfPlayer = array();
                          if (DisguiseAPI.isDisguised($player))
                          {
                            DisguiseAPI.undisguiseToAll(player);
                            
-                           $j = count($arrayOfPlayer = $this->blockhunt->getServer()->getgetOnlinePlayers());
+                           $j = count($arrayOfPlayer = $this->plugin->getServer()->getgetOnlinePlayers());
                            for ($i = 0; $i < $j; $i++)
                            {
                              $pl = $arrayOfPlayer[$i];
@@ -299,10 +299,10 @@ class ArenaObserverTask extends PluginTask{
                            }
                            //$block->addUnsafeEnchantment(Enchantment::DURABILITY, 10);
                            //$player->playSound($pLoc, Sound.ORB_PICKUP, 1, 1);
-                           $this->blockhunt->storage->hiddenLoc[$player] = $moveLoc;
-                           MessageM.sendFMessage($player, ConfigC::normal_ingameNowSolid, $block->toString() );
+                           $this->plugin->storage->hiddenLoc[$player] = $moveLoc;
+                           MessageM.sendFMessage($player, $this->plugin->storage->message->get("normal")["ingameNowSolid"], $block->toString() );
                          }
-                         $j = count($arrayOfPlayer = $this->blockhunt->getServer()->getgetOnlinePlayers());
+                         $j = count($arrayOfPlayer = $this->plugin->getServer()->getgetOnlinePlayers());
                          for ($i = 0; $i < $j; $i++)
                          {
                            $pl = $arrayOfPlayer[$i];
@@ -333,11 +333,12 @@ class ArenaObserverTask extends PluginTask{
            foreach($arena->playersInArena as $arenaPlayer)
            {
              $arenaPlayer->setLevel($arena->timer);
-             $arenaPlayer->setGameMode(GameMode::SURVIVAL);
+             $arenaPlayer->setGameMode(0);
            }
-           ScoreboardHandler::updateScoreboard($arena);
+           //ScoreboardHandler::updateScoreboard($arena);
          }
-         SignsHandler::updateSigns();
+         $this->plugin->signsHandler->updateSigns();
+		}
 	}
 }
 ?>

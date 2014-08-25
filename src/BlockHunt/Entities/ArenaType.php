@@ -1,7 +1,7 @@
 <?php
 namespace BlockHunt\Entities;
 
-class ArenaType
+class ArenaType extends SplEnum
 {
 	const maxPlayers = 0;
 	const minPlayers = 1;

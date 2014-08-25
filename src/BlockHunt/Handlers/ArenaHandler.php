@@ -5,7 +5,9 @@ use pocketmine\Player;
 use pocketmine\item\Item;
 use pocketmine\level\Level;
 use pocketmine\block\Block;
+use pocketmine\math\Vector3;
 use pocketmine\level\Position;
+use pocketmine\command\ConsoleCommandSender;
 use pocketmine\inventory\PlayerInventory;
 
 //use BlockHunt\Handlers\ScoreboardHandler;
@@ -17,22 +19,20 @@ class ArenaHandler {
 	private $plugin;
 
 	public function __construct(BlockHunt $plugin){
-		parent::__construct($plugin);
 		$this->plugin = $plugin;
 	}
 	
-	public static function loadArena()
-	{
-		$this->plugin->storage->arenaList->clear();
-		foreach($this->plugin->storage->arenas->getFile()->getKeys(false) as $arenaname) {
-			$this->plugin->storage->arenaList->add($this->plugin->storage->arenas->getFile()->get($arenaname));
+	public function loadArenas(){
+		unset($this->plugin->storage->arenaList);
+		foreach($this->plugin->storage->arenas as $arenaname => $arenaval) {
+			$this->plugin->storage->arenaList[] = $this->plugin->storage->arenas->get($arenaname);
 		}
-		foreach($this->plugin->storage->$arena->arenaList as $arena {
+		foreach($this->plugin->storage->arenaList as $arena) {
 			//ScoreboardHandler::createScoreboard($arena->;
 		}
 	}
 
-	public static function sendMessage(Arena $arena $message, $vars)
+	public static function sendMessage(Arena $arena, $message, $vars)
 	{
 	  foreach($arena->playersInArena as $player)
 	 {
@@ -41,12 +41,12 @@ class ArenaHandler {
 	 }
 	}
 
-	public static function sendFMessage(Arena $arena $location, $vars)
+	public static function sendFMessage(Arena $arena, $location, $vars)
 	{
 	 foreach($arena->playersInArena as $player)
 	 {
-	   $pMessage = $location->config->getFile()->get($location->location)->toString()->replaceAll("%player%", player->getName());
-	   $player->sendMessage(MessageM::replaceAll($pMessage, vars));
+	   $pMessage = str_replace("%player%", $player->getName(), $location->config->get($location->location));
+	   $player->sendMessage(MessageM::replaceAll($pMessage, $vars));
 	 }
 	}
 
@@ -54,7 +54,7 @@ class ArenaHandler {
 	{
 	 $found = false;
 	 $alreadyJoined = false;
-	 foreach($this->plugin->storage->$arena->arenaList as $arena {
+	 foreach($this->plugin->storage->$arena->arenaList as $arena) {
 	   if (($arena->playersInArena != null) && 
 		 ($arena->playersInArena->contains($player))) {
 		 $alreadyJoined = true;
@@ -62,13 +62,13 @@ class ArenaHandler {
 	 }
 	 if (!$alreadyJoined)
 	 {
-	   foreach($this->plugin->storage->$arena->arenaList as $arena {
+	   foreach($this->plugin->storage->$arena->arenaList as $arena) {
 		 if (strtolower($arena->arenaname) == strtolower($arenaname))
 		 {
 		   $found = true;
 		   if ($arena->disguiseBlocks->isEmpty())
 		   {
-			 MessageM::sendFMessage($player, $this->plugin->getConfig()->get("error")["joinNoBlocksSet"], new String[0]);
+			 MessageM::sendFMessage($player, $this->plugin->getConfig()->get("error")["joinNoBlocksSet"], []);
 		   }
 		   else
 		   {
@@ -80,7 +80,7 @@ class ArenaHandler {
 			 }
 			 $localObject;
 			 $j = count($localObject = $player->getInventory()->getArmorContents());
-			 for (int $i = 0; $i < $j; $i++)
+			 for ($i = 0; $i < $j; $i++)
 			 {
 			   $invitem = $localObject[$i];
 			   if ($invitem->getID() != 0) {
@@ -100,13 +100,13 @@ class ArenaHandler {
 				 (!$arena->seekersWarp == $zero) && 
 				 (!$arena->spawnWarp == $zero))
 			   {
-				 if (($arena->gameState == Arena::ArenaState::WAITING) || 
-				   ($arena->gameState == Arena::ArenaState::STARTING))
+				 if (($arena->gameState == ArenaState::WAITING) || 
+				   ($arena->gameState == ArenaState::STARTING))
 				 {
 				   if ($arena->playersInArena.size() >= $arena->maxPlayers) {
-					 if (!$player-hasPermission(PermissionsC::Permissions::joinfull))
+					 if (!$player-hasPermission('blockhunt.moderator.joinfull'))
 					 {
-					   MessageM::sendFMessage(player, $this->plugin->getConfig()->get("error")["joinFull"], new String[0]);
+					   MessageM::sendFMessage(player, $this->plugin->storage->messages->get("error")["joinFull"], []);
 					   return;
 					 }
 				   }
@@ -127,118 +127,58 @@ class ArenaHandler {
 				   $this->plugin->storage->pData[] = array($player, $pad);
 				   
 				   $player->teleport($arena->lobbyWarp);
-				   $player->setGameMode(GameMode.SURVIVAL);
+				   $player->setGameMode(0);
 				   
-				   localObject = $player->getActivePotionEffects().iterator();
-				   while (((Iterator)localObject).hasNext())
-				   {
-					 PotionEffect pe = (PotionEffect)((Iterator)localObject).next();
-					 $player->removePotionEffect(pe.getType());
-				   }
+				   // $localObject = $player->getActivePotionEffects().iterator();
+				   // while (((Iterator)localObject).hasNext())
+				   // {
+					 // PotionEffect pe = (PotionEffect)((Iterator)localObject).next();
+					 // $player->removePotionEffect(pe.getType());
+				   // }
 				   $player->setFoodLevel(20);
 				   $player->setHealth(20);
 				   $player->setLevel($arena->timer);
-				   $player->setExp(0.0F);
-				   $player->getInventory().clear();
-				   $player->getInventory().setHelmet(
-					 new ItemStack(Material.AIR));
-				   $player->getInventory().setChestplate(
-					 new ItemStack(Material.AIR));
-				   $player->getInventory().setLeggings(
-					 new ItemStack(Material.AIR));
-				   $player->getInventory().setBoots(
-					 new ItemStack(Material.AIR));
+				   $player->setExp(0.0);
+				   $player->getInventory()->clearAll();
+				   $player->getInventory()->setHelmet(Item::AIR);
+				   $player->getInventory()->setChestplate(Item::AIR);
+				   $player->getInventory()->setLeggings(Item::AIR);
+				   $player->getInventory()->setBoots(Item::AIR);
 				   $player->setFlying(false);
 				   $player->setAllowFlight(false);
-				   if ((((Boolean)$this->plugin->storage->config.get($this->plugin->getConfig()->get("shop")["blockChooserv1Enabled"] && (
-					 ($this->plugin->storage->shop.getFile().get(
-					 $player->getName() + 
-					 ".blockchooser") != null) || 
-					 
-
-
-
-					 ($player-hasPermission( PermissionsC::Permissions::shopblockchooser, Boolean.valueOf(false)))))
+				   if ($this->plugin->getConfig()->get("shop")["blockChooserv1Enabled"] && (($this->plugin->storage->shop->get($player->getName().".blockchooser") != null) || $player-hasPermission('blockhunt.admin.blockchooser')))
 				   {
-					 $shopBlockChooser = Item::fromString($this->plugin->getConfig()->get("shop")["blockChooserv1IDname"]);
-					 $shopBlockChooser_IM = shopBlockChooser->getDamage();
-					 $shopBlockChooser_IM->setDisplayName(MessageM::replaceAll($this->plugin->getConfig()->get("shop")["blockChooserv1Name"], new String[0]));
-					 $lores =  $this->plugin->getConfig()->get("shop")["blockChooserv1Description"];
-					 $lores2 = array();
-					 foreach($lores as $lore) {
-					   $lores2[] = MessageM::replaceAll($lore, new String[0]));
-					 }
-					 $shopBlockChooser_IM->setLore($lores2);
-					 $shopBlockChooser->setItemMeta($shopBlockChooser_IM);
-					 
+					$shopBlockChooser = new Item($this->plugin->getConfig()->get("shop")["blockChooserv1IDname"], 0, 1,  MessageM::replaceAll($this->plugin->getConfig()->get("shop")["blockChooserv1Name"]));
+					
 					 $player->getInventory()->addItem($shopBlockChooser);
 				   }
-				   if ((($this->plugin->storage->config.get($this->plugin->getConfig()->get("shop")["BlockHuntPassv2Enabled") && ($this->plugin->storage->shop.getFile().getInt(
-					 $player->getName() + 
-					 ".blockhuntpass") != 0))
+				   if ($this->plugin->getConfig()->get("shop")["BlockHuntPassv2Enabled"] && ($this->plugin->storage->shop.get($player->getName().".blockhuntpass") != 0))
 				   {
-					 ItemStack shopBlockHuntPass = new ItemStack(
-					   Material.getMaterial((String)$this->plugin->storage->config
-					   .get($this->plugin->getConfig()->get("shop")["BlockHuntPassv2IDName)), 
-					   1);
-					 ItemMeta shopBlockHuntPass_IM = shopBlockHuntPass
-					   .getItemMeta();
-					 shopBlockHuntPass_IM
-					   .setDisplayName(
-					   MessageM::replaceAll((String)$this->plugin->storage->config
-					   .get($this->plugin->getConfig()->get("shop")["BlockHuntPassv2Name), new String[0]));
-					 List<String> lores = $this->plugin->storage->config
-					   .getFile()
-					   .getStringList(
-					   $this->plugin->getConfig()->get("shop")["BlockHuntPassv2Description.location);
-					 List<String> lores2 = new ArrayList();
-					 for (String lore : lores) {
-					   lores2.add(
-						 MessageM::replaceAll(lore, new String[0]));
-					 }
-					 shopBlockHuntPass_IM.setLore(lores2);
-					 shopBlockHuntPass
-					   .setItemMeta(shopBlockHuntPass_IM);
-					 shopBlockHuntPass
-					   .setAmount($this->plugin->storage->shop
-					   .getFile()
-					   .getInt(player
-					   .getName() + 
-					   ".blockhuntpass"));
+					 $shopBlockHuntPass = new Item($this->plugin->getConfig()->get("shop")["BlockHuntPassv2IDName"], 0, 1,  MessageM::replaceAll($this->plugin->getConfig()->get("shop")["BlockHuntPassv2Name"]));
 					 
-					 $player->getInventory().addItem(new ItemStack[] {
-					   shopBlockHuntPass });
+					 $player->getInventory().addItem($shopBlockHuntPass);
 				   }
+				   
 				   $player->updateInventory();
 				   
 				   DisguiseAPI.undisguiseToAll(player);
 				   
-				   sendFMessage($arena 
-					 $this->plugin->getConfig()->get("normal_joinJoinedArena, new String[] {
-					 "playername-" + $player->getName(), 
-					 "1-" + $arena->playersInArena.size(), 
-					 "2-" + $arena->maxPlayers });
-				   if ($arena->playersInArena.size() < $arena->minPlayers) {
-					 sendFMessage(
-					   $arena 
-					   $this->plugin->getConfig()->get("warning_lobbyNeedAtleast, new String[] {
-					   "1-" + $arena->minPlayers });
+				   sendFMessage($arena, $this->plugin->storage->message->get("normal")["joinJoinedArena"], [ "playername-" . $player->getName(), "1-" . count($arena->playersInArena), "2-" . $arena->maxPlayers ]);
+				   if (count($arena->playersInArena) < $arena->minPlayers) {
+					 sendFMessage($arena, $this->plugin->getConfig()->get("warning")["lobbyNeedAtleast"], [ "1-" . $arena->minPlayers ]);
 				   }
 				 }
 				 else
 				 {
-				   MessageM::sendFMessage(player, 
-					 $this->plugin->getConfig()->get("error_joinArenaIngame, new String[0]);
+				   MessageM::sendFMessage($player, $this->plugin->storage->messages->get("error")["joinArenaIngame"], []);
 				 }
 			   }
 			   else {
-				 MessageM::sendFMessage(player, 
-				   $this->plugin->getConfig()->get("error_joinWarpsNotSet, new String[0]);
+				 MessageM::sendFMessage($player, $this->plugin->storage->messages->get("error")["joinWarpsNotSet"], []);
 			   }
 			 }
 			 else {
-			   MessageM::sendFMessage(player, 
-				 $this->plugin->getConfig()->get("error_joinWarpsNotSet, new String[0]);
+			   MessageM::sendFMessage(player, $this->plugin->storage->messages->get("error")["joinWarpsNotSet"], []);
 			 }
 		   }
 		 }
@@ -246,250 +186,214 @@ class ArenaHandler {
 	 }
 	 else
 	 {
-	   MessageM::sendFMessage(player, $this->plugin->getConfig()->get("error_joinAlreadyJoined, new String[0]);
+	   MessageM::sendFMessage(player, $this->plugin->storage->messages->get("error")['joinAlreadyJoined'], []);
 	   return;
 	 }
-	 if (!found) {
-	   MessageM::sendFMessage(player, $this->plugin->getConfig()->get("error_noArena, new String[] {"name-" + 
-		 $arena->ame });
+	 if (!$found) {
+	   MessageM::sendFMessage(player, $this->plugin->storage->messages->get("error")["noArena"], ["name-" .$arenaname]);
 	 }
-	 SignsHandler.updateSigns();
+		
+	  SignsHandler($this->plugin)->updateSigns();
 	}
 
-	public static function playerLeaveArena(Player player, boolean message, boolean cleanup)
+	public static function playerLeaveArena(Player $player, $message, $cleanup)
 	{
-	 Arena $arena->= null;
-	 for (Arena $arena : $this->plugin->storage->arenaList) {
-	   if (($arena->.playersInArena != null) && 
-		 ($arena->.playersInArena.contains(player))) {
-		 $arena->= $arena->;
+	 $arena = null;
+	 foreach($this->plugin->storage->arenaList as $arena2) {
+	   if (($arena->playersInArena != null) && (in_array($player, $arena->playersInArena))) {
+			$arena = $arena2;
 	   }
 	 }
-	 if ($arena->!= null)
+	 if ($arena != null)
 	 {
-	   if (cleanup)
+	   if ($cleanup)
 	   {
-		 $arena->playersInArena.remove(player);
-		 if ($arena->seekers.contains(player)) {
-		   $arena->seekers.remove(player);
+		 unset($arena->playersInArena[$player]);
+		 if (in_array($player, $arena->seekers)) {
+		   unset($arena->seekers[$player]);
 		 }
 		 if (($arena->playersInArena.size() < $arena->minPlayers) && 
-		   ($arena->gameState.equals(Arena::ArenaState::STARTING)))
+		   ($arena->gameState.equals(ArenaState::STARTING)))
 		 {
-		   $arena->gameState = Arena::ArenaState::WAITING;
+		   $arena->gameState = ArenaState::WAITING;
 		   $arena->timer = 0;
 		   
-		   sendFMessage($arena 
-			 $this->plugin->getConfig()->get("warning_lobbyNeedAtleast, new String[] {"1-" + 
-			 $arena->minPlayers });
+		   sendFMessage($arena, $this->plugin->storage->messages->get("warning")["lobbyNeedAtleast"], ["1-".$arena->minPlayers ]);
 		 }
 		 if (($arena->playersInArena.size() <= 2) && 
-		   ($arena->gameState == Arena::ArenaState::INGAME)) {
-		   if ($arena->seekers.size() >= $arena->playersInArena.size()) {
-			 seekersWin($arena->;
+		   ($arena->gameState == ArenaState::INGAME)) {
+		   if (count($arena->seekers) >= count($arena->playersInArena)) {
+			$this->seekersWin($arena);
 		   } else {
-			 hidersWin($arena->;
+			 $this->hidersWin($arena);
 		   }
 		 }
-		 if ($arena->seekers.size() >= $arena->playersInArena.size()) {
-		   seekersWin($arena->;
+		 if (count($arena->seekers) >= count($arena->playersInArena)) {
+			$this->seekersWin($arena);
 		 }
-		 if (($arena->seekers.size() <= 0) && 
-		   ($arena->gameState == Arena::ArenaState::INGAME))
+		 if ((count($arena->seekers) <= 0) && ($arena->gameState == ArenaState::INGAME))
 		 {
-		   Player seeker = (Player)$arena->playersInArena.get($this->plugin->storage->random
-			 .nextInt($arena->playersInArena.size()));
-		   sendFMessage($arena 
-			 $this->plugin->getConfig()->get("warning_ingameNEWSeekerChoosen, new String[] {"seeker-" + 
-			 seeker.getName() });
-		   sendFMessage($arena 
-			 $this->plugin->getConfig()->get("normal_ingameSeekerChoosen, new String[] {"seeker-" + 
-			 seeker.getName() });
-		   DisguiseAPI.undisguiseToAll(seeker);
-		   for (Player pl : Bukkit.getOnlinePlayers()) {
-			 pl.showPlayer(seeker);
+		   $seeker = $arena->playersInArena->get(mt_rand($this->plugin->storage->random, count($arena->playersInArena) - 1));
+		   sendFMessage($arena, $this->plugin->storage->messages->get("warning")["ingameNEWSeekerChoosen"], ["seeker-" . $seeker->getName() ]);
+		   sendFMessage($arena, $this->plugin->storage->messages->get("normal")["ingameSeekerChoosen"], ["seeker-" .$seeker->getName() ]);
+			DisguiseAPI::undisguiseToAll($seeker);
+		   foreach($this->plugin->getServer->getOnlinePlayers() as $pl) {
+			 $pl->showPlayer($seeker);
 		   }
-		   seeker.getInventory().clear();
-		   $arena->seekers.add(seeker);
-		   seeker.teleport($arena->seekersWarp);
-		   $this->plugin->storage->seekertime.put(seeker, Integer.valueOf($arena->waitingTimeSeeker));
+		   $seeker->getInventory()->clearAll();
+		   $arena->seekers[] = $seeker;
+		   $seeker->teleport($arena->seekersWarp);
+		   $this->plugin->storage->seekertime[$seeker] = $arena->waitingTimeSeeker;
 		 }
 	   }
-	   PlayerArenaData pad = new PlayerArenaData(null, null, null, null, 
-		 null, null, null, null, null, false);
-	   if ($this->plugin->storage->pData.get(player) != null) {
-		 pad = (PlayerArenaData)$this->plugin->storage->pData.get(player);
+		$pad = new PlayerArenaData(null, null, null, null, null, null, null, null, null, false);
+	   if ($this->plugin->storage->pData[$player] != null) {
+		 $pad = $this->plugin->storage->pData[$player];
 	   }
-	   $player->getInventory().clear();
-	   $player->getInventory().setContents(pad.pInventory);
-	   $player->getInventory().setArmorContents(pad.pArmor);
-	   $player->updateInventory();
-	   $player->setExp(pad.pEXP.floatValue());
-	   $player->setLevel(pad.pEXPL.intValue());
-	   $player->setHealth(pad.pHealth.doubleValue());
-	   $player->setFoodLevel(pad.pFood.intValue());
-	   $player->addPotionEffects(pad.pPotionEffects);
+	   $player->getInventory()->clearAll();
+	   $player->getInventory()->setContents($pad->pInventory);
+	   $player->getInventory()->setArmorContents($pad->pArmor);
+	   $player->setExp(floatval($pad->pEXP));
+	   $player->setLevel(intval($pad->pEXPL));
+	   $player->setHealth(floatval($pad->pHealth));
+	   $player->setFoodLevel(intval($pad->pFood));
+	   $player->addPotionEffects($pad->pPotionEffects);
 	   $player->teleport($arena->spawnWarp);
-	   $player->setGameMode(pad.pGameMode);
-	   $player->setAllowFlight(pad.pFlying);
+	   $player->setGameMode($pad->pGameMode);
+	   $player->setAllowFlight($pad->pFlying);
 	   if ($player->getAllowFlight()) {
 		 $player->setFlying(true);
 	   }
-	   $this->plugin->storage->pData.remove(player);
-	   for (Player pl : Bukkit.getOnlinePlayers())
+	   unset($this->plugin->storage->pData[$player]);
+	   foreach($this->plugin->getServer->getOnlinePlayers() as $pl)
 	   {
-		 pl.showPlayer(player);
-		 if (($this->plugin->storage->hiddenLoc.get(player) != null) && 
-		   ($this->plugin->storage->hiddenLocWater.get(player) != null))
+		 $pl->showPlayer($player);
+		 if (($this->plugin->storage->hiddenLoc[$player] != null) && ($this->plugin->storage->hiddenLocWater[$player] != null))
 		 {
-		   Block pBlock = ((Location)$this->plugin->storage->hiddenLoc.get(player)).getBlock();
-		   if (((Boolean)$this->plugin->storage->hiddenLocWater.get(player)).booleanValue()) {
-			 pl.sendBlockChange(pBlock.getLocation(), 
-			   Material.STATIONARY_WATER, (byte)0);
+		   $pBlock = ($this->plugin->storage->hiddenLoc[$player]);
+		   if ($this->plugin->storage->hiddenLocWater[$player]) {
+			 $pl->setBlock(new Vector3($pBlock->getX(), $pBlock->getY(), $pBlock->getZ()), Block::STILL_WATER, false, true);
 		   } else {
-			 pl.sendBlockChange(pBlock.getLocation(), 
-			   Material.AIR, (byte)0);
+			 $pl->setBlock(new Vector3($pBlock->getX(), $pBlock->getY(), $pBlock->getZ()), Block::AIR, false, true);
 		   }
 		 }
-		 DisguiseAPI.undisguiseToAll(player);
+		 DisguiseAPI::undisguiseToAll($player);
 	   }
-	   ScoreboardHandler.removeScoreboard(player);
+	   //ScoreboardHandler::removeScoreboard($player);
 	   
-	   MessageM::sendFMessage(player, $this->plugin->getConfig()->get("normal_leaveYouLeft, new String[0]);
-	   if (message) {
-		 sendFMessage($arena $this->plugin->getConfig()->get("normal_leaveLeftArena, new String[] {
-		   "playername-" + $player->getName(), "1-" + 
-		   $arena->playersInArena.size(), "2-" + 
-		   $arena->maxPlayers });
+	   MessageM::sendFMessage(player, $this->plugin->storage->messages->get("normal")["leaveYouLeft"], []);
+	   if ($message) {
+		 sendFMessage($arena, $this->plugin->storage->messages->get("normal")["leaveLeftArena"], ["playername-" . $player->getName(), "1-" . $arena->playersInArena.size(), "2-" . $arena->maxPlayers ]);
 	   }
 	 }
 	 else
 	 {
-	   if (message) {
-		 MessageM::sendFMessage(player, $this->plugin->getConfig()->get("error_leaveNotInArena, new String[0]);
+	   if ($message) {
+		 MessageM::sendFMessage($player, $this->plugin->storage->messages->get("error")["leaveNotInArena"], []);
 	   }
 	   return;
 	 }
-	 SignsHandler.updateSigns();
+	 SignsHandler($this->plugin)->updateSigns();
 	}
 
-	public static function seekersWin(Arena $arena->
+	public static function seekersWin(Arena $arena)
 	{
-	 sendFMessage($arena $this->plugin->getConfig()->get("normal_winSeekers, new String[0]);
-	 for (Player player : $arena->playersInArena) {
+	 sendFMessage($arena, $this->plugin->storage->messages->get("normal")["winSeekers"], []);
+	 foreach($arena->playersInArena as $player) {
 	   if ($arena->seekersWinCommands != null)
 	   {
-		 for (String command : $arena->seekersWinCommands) {
-		   Bukkit.dispatchCommand(Bukkit.getConsoleSender(), 
-			 command.replaceAll("%player%", $player->getName()));
+		 foreach($arena->seekersWinCommands as $command) {
+		   $this->plugin->getServer()->dispatchCommand(new ConsoleCommandSender(), str_replace("%player%", $player->getName(), $command));
 		 }
-		 if ($this->plugin->storage->config.getFile().getBoolean("vaultSupport"))
+		 if ($this->plugin->getConfig()->get("vaultSupport"))
 		 {
-		   if (BlockHunt.econ != null)
+		   if ($this->plugin->econ != null)
 		   {
-			 BlockHunt.econ.depositPlayer($player->getName(), 
-			   $arena->seekersTokenWin);
-			 MessageM::sendFMessage(player, 
-			   $this->plugin->getConfig()->get("normal_addedVaultBalance, new String[] {"amount-" + 
-			   $arena->seekersTokenWin });
+			 $this->plugin->econ->depositPlayer($player->getName(), $arena->seekersTokenWin);
+			 MessageM::sendFMessage($player,  $this->plugin->storage->messages->get("normal")["addedVaultBalance"], ["amount-" .$arena->seekersTokenWin ]);
 		   }
 		 }
 		 else
 		 {
-		   if ($this->plugin->storage->shop.getFile().get($player->getName() + ".tokens") == null)
+		   if ($this->plugin->storage->shop->get($player->getName() . ".tokens") == null)
 		   {
-			 $this->plugin->storage->shop.getFile().set($player->getName() + ".tokens", Integer.valueOf(0));
-			 $this->plugin->storage->shop.save();
+			 $this->plugin->storage->shop->set($player->getName() . ".tokens", 0);
+			 $this->plugin->storage->shop->save();
 		   }
-		   int playerTokens = $this->plugin->storage->shop.getFile().getInt(
-			 $player->getName() + ".tokens");
-		   $this->plugin->storage->shop.getFile().set($player->getName() + ".tokens", 
-			 Integer.valueOf(playerTokens + $arena->seekersTokenWin));
-		   $this->plugin->storage->shop.save();
+		   $playerTokens = $this->plugin->storage->shop->get($player->getName() . ".tokens");
+		   $this->plugin->storage->shop->set($player->getName() . ".tokens",  intval($playerTokens . $arena->seekersTokenWin));
+		   $this->plugin->storage->shop->save();
 		   
-		   MessageM::sendFMessage(player, $this->plugin->getConfig()->get("normal_addedToken, new String[] {
-			 "amount-" + $arena->seekersTokenWin });
+		   MessageM::sendFMessage(player, $this->plugin->storage->messages->get("normal")["addedToken"], ["amount-" . $arena->seekersTokenWin ]);
 		 }
 	   }
 	 }
-	 $arena->seekers.clear();
-	 for (Player player : $arena->playersInArena)
-	 {
-	   playerLeaveArena(player, false, false);
-	   $player->playSound($player->getLocation(), Sound.LEVEL_UP, 1.0F, 1.0F);
-	 }
-	 $arena->gameState = Arena::ArenaState::WAITING;
-	 $arena->timer = 0;
-	 $arena->playersInArena.clear();
-	}
-
-	public static function hidersWin(Arena $arena->
-	{
-	 sendFMessage($arena $this->plugin->getConfig()->get("normal_winHiders, new String[0]);
-	 for (Player player : $arena->playersInArena) {
-	   if ((!$arena->seekers.contains(player)) && 
-		 ($arena->hidersWinCommands != null))
-	   {
-		 for (String command : $arena->hidersWinCommands) {
-		   Bukkit.dispatchCommand(
-			 Bukkit.getConsoleSender(), 
-			 command.replaceAll("%player%", $player->getName()));
-		 }
-		 if ($this->plugin->storage->config.getFile().getBoolean("vaultSupport"))
-		 {
-		   if ((BlockHunt.econ != null) && 
-			 (!$arena->seekers.contains(player)))
-		   {
-			 BlockHunt.econ.depositPlayer($player->getName(), 
-			   $arena->hidersTokenWin);
-			 MessageM::sendFMessage(player, 
-			   $this->plugin->getConfig()->get("normal_addedVaultBalance, new String[] {
-			   "amount-" + $arena->hidersTokenWin });
-		   }
-		 }
-		 else
-		 {
-		   if ($this->plugin->storage->shop.getFile().get($player->getName() + ".tokens") == null)
-		   {
-			 $this->plugin->storage->shop.getFile().set($player->getName() + ".tokens", 
-			   Integer.valueOf(0));
-			 $this->plugin->storage->shop.save();
-		   }
-		   int playerTokens = $this->plugin->storage->shop.getFile().getInt(
-			 $player->getName() + ".tokens");
-		   $this->plugin->storage->shop.getFile().set($player->getName() + ".tokens", 
-			 Integer.valueOf(playerTokens + $arena->hidersTokenWin));
-		   $this->plugin->storage->shop.save();
-		   
-		   MessageM::sendFMessage(player, 
-			 $this->plugin->getConfig()->get("normal_addedToken, new String[] {"amount-" + 
-			 $arena->hidersTokenWin });
-		 }
-	   }
-	 }
-	 $arena->seekers.clear();
-	 for (Player player : $arena->playersInArena)
-	 {
-	   playerLeaveArena(player, false, false);
-	   $player->playSound($player->getLocation(), Sound.LEVEL_UP, 1.0F, 1.0F);
-	 }
-	 $arena->gameState = Arena::ArenaState::WAITING;
-	 $arena->timer = 0;
-	 $arena->playersInArena.clear();
-	}
-
-	public static function stopArena(Arena $arena->
-	{
-	 sendFMessage($arena $this->plugin->getConfig()->get("warning_$arena->topped, new String[0]);
-	 
-	 $arena->seekers->clear();
+	 $arena->seekers = [];
 	 foreach($arena->playersInArena as $player)
 	 {
-	   $this->playerLeaveArena($player, false, false);
+	   playerLeaveArena($player, false, false);
 	   //$player->playSound($player->getLocation(), Sound.LEVEL_UP, 1.0F, 1.0F);
 	 }
-	 $arena->gameState = Arena::ArenaState::WAITING;
+	 $arena->gameState = ArenaState::WAITING;
 	 $arena->timer = 0;
-	 $arena->playersInArena->clear();
+	 $arena->playersInArena = [];
+	}
+
+	public static function hidersWin(Arena $arena)
+	{
+	 sendFMessage($arena, $this->plugin->storage->messages->get("normal")["winHiders"],  []);
+	 foreach($arena->playersInArena as $player) {
+	   if ((!in_array($player, $arena->seekers)) && ($arena->hidersWinCommands != null))
+	   {
+		 foreach($arena->hidersWinCommands as $command) {
+			$this->plugin->getServer()->dispatchCommand(new ConsoleCommandSender(), str_replace("%player%", $player->getName(), $command));
+		 }
+		 if ($this->plugin->storage->config->get("vaultSupport"))
+		 {
+		   if (($this->plugin->econ != null) && (!in_array($player, $arena->seekers)))
+		   {
+			 $this->plugin->econ->depositPlayer($player->getName(), $arena->hidersTokenWin);
+			 MessageM::sendFMessage(player, $this->plugin->storage->messages->get("normal")["addedVaultBalance"], ["amount-" . $arena->hidersTokenWin ]);
+		   }
+		 }
+		 else
+		 {
+		   if ($this->plugin->storage->shop->get($player->getName() . ".tokens") == null)
+		   {
+			 $this->plugin->storage->shop->set($player->getName() . ".tokens", 0);
+			 $this->plugin->storage->shop->save();
+		   }
+		   $playerTokens = $this->plugin->storage->shop->get($player->getName() . ".tokens");
+		   $this->plugin->storage->shop.getFile().set($player->getName() . ".tokens", intval($playerTokens . $arena->hidersTokenWin));
+		   $this->plugin->storage->shop->save();
+		   
+		   MessageM::sendFMessage(player, $this->plugin->storage->messages->get("normal")["addedToken"], ["amount-" . $arena->hidersTokenWin ]);
+		 }
+	   }
+	 }
+	 $arena->seekers = [];
+	 foreach($arena->playersInArena as $player)
+	 {
+	   playerLeaveArena(player, false, false);
+	   //$player->playSound($player->getLocation(), Sound.LEVEL_UP, 1.0F, 1.0F);
+	 }
+	 $arena->gameState = ArenaState::WAITING;
+	 $arena->timer = 0;
+	 $arena->playersInArena = [];
+	}
+
+	public static function stopArena(Arena $arena)
+	{
+		sendFMessage($arena, $this->plugin->storage->messages->get("warning")["arenaStopped"], []);
+
+		$arena->seekers = [];
+		foreach($arena->playersInArena as $player)
+		{
+		$this->playerLeaveArena($player, false, false);
+		//$player->playSound($player->getLocation(), Sound.LEVEL_UP, 1.0F, 1.0F);
+		}
+		$arena->gameState = ArenaState::WAITING;
+		$arena->timer = 0;
+		$arena->playersInArena = [];
 	}
 }

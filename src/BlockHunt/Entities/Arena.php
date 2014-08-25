@@ -2,6 +2,8 @@
 namespace BlockHunt\Entities;
 
 use pocketmine\utils\Config;
+use BlockHunt\BlockHunt;
+use BlockHunt\Entities\ArenaState;
 
 class Arena
 {
@@ -28,13 +30,12 @@ class Arena
    public $hidersTokenWin;
    public $killTokens;
    public $playersInArena;
-   public $gameState;
+   public $gameState = ArenaState::DISABLED;
    public $timer;
    public $seekers;
    
-   public function __construct(Plugin $plugin, $arenaName, $pos1, $pos2, $maxPlayers = 1, $minPlayers = 1, $amountSeekersOnStart = 1, $timeInLobbyUntilStart = 300, $waitingTimeSeeker = 20, $gameTime = 360, $timeUntilHidersSword = 30, $disguiseBlocks, $lobbyWarp, $hidersWarp, $seekersWarp, $spawnWarp, $seekersWinCommands, $hidersWinCommands, $allowedCommands, $seekersTokenWin = 50, $hidersTokenWin = 50, $killTokens = 8, $playersInArena, $gameState, $timer, $seekers)
+   public function __construct(BlockHunt $plugin, $arenaName, $pos1, $pos2, $maxPlayers = 1, $minPlayers = 1, $amountSeekersOnStart = 1, $timeInLobbyUntilStart = 300, $waitingTimeSeeker = 20, $gameTime = 360, $timeUntilHidersSword = 30, $disguiseBlocks, $lobbyWarp, $hidersWarp, $seekersWarp, $spawnWarp, $seekersWinCommands, $hidersWinCommands, $allowedCommands, $seekersTokenWin = 50, $hidersTokenWin = 50, $killTokens = 8, $playersInArena, ArenaState $gameState, $timer, $seekers)
    {
-		parent::__construct($plugin);
 		$this->plugin = $plugin;
 		$this->arenaName = $arenaName;
 		$this->pos1 = $pos1;
