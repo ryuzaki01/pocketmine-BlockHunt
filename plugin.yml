@@ -1,7 +1,7 @@
 name: BlockHunt
 main: BlockHunt\BlockHunt
 version: 0.1.1
-api: 1.2.0
+api: 3.0.0
 author: Kagehis4
 website: https://github.com/ryuzaki01/pocketmine-HideHunt
 commands:
